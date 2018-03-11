@@ -4,7 +4,7 @@
 	<groupId>com.heliosapm.jvm</groupId>
 	<artifactId>jvm-name</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 	<name>jvm-name</name>
 	<description>JVM Instance Name Setter</description>
 	<inceptionYear>2018</inceptionYear>
