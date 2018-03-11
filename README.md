@@ -123,7 +123,6 @@ openFile
 -vmargs
 -Dosgi.requiredJavaVersion=1.8
 --add-modules=ALL-SYSTEM
--Xms40m
 -Dosgi.module.lock.timeout=10
 -Xverify:none
 -Xms2400m
