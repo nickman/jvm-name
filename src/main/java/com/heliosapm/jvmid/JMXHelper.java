@@ -18,6 +18,9 @@ under the License.
  */
 package com.heliosapm.jvmid;
 
+import java.lang.reflect.Method;
+import java.util.Properties;
+
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -88,6 +91,23 @@ public class JMXHelper {
 	      throw new RuntimeException("Failed to get attribute", e);
 	    }
 	  }
+	  
+	  /**
+	   * Returns the agent properties
+	   * @return the agent properties or null if reflective call failed
+	   */
+	  public static Properties getAgentProperties() {
+	    try {
+	      Class<?> clazz = Class.forName("sun.misc.VMSupport");
+	      Method m = clazz.getDeclaredMethod("getAgentProperties");
+	      m.setAccessible(true);
+	      Properties p = (Properties)m.invoke(null);
+	      return p;
+	    } catch (Throwable t) {
+	      return null;
+	    }   
+	  }
+	  
 	
 
 }

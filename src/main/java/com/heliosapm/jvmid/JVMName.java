@@ -23,11 +23,11 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Properties;
 
 import javax.management.MBeanServer;
 
 import sun.management.counter.Counter;
-import sun.management.counter.perf.PerfByteArrayCounter;
 import sun.management.counter.perf.PerfStringCounter;
 
 /**
@@ -50,19 +50,19 @@ public class JVMName {
 	private static final MBeanServer MBEANSERVER = ManagementFactory.getPlatformMBeanServer();
 
 	private static final Field bufferField;
-	
+
 	private static final PerfStringCounter rtCounter;
-	
+
 	static {
 		try {
-			bufferField = PerfByteArrayCounter.class.getDeclaredField("bb");
+			bufferField = PerfStringCounter.class.getSuperclass().getDeclaredField("bb");
 			bufferField.setAccessible(true);
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed to get name ByteBuffer field. Stack trace follows", ex);
 		}
 		rtCounter = getDisplayCounter();
 	}
-	
+
 	/**
 	 * Sets the JVM's display name
 	 * @param display The display name to set to
@@ -76,17 +76,22 @@ public class JVMName {
 		try {
 			nameBuffer = (ByteBuffer)bufferField.get(rtCounter);
 			byte[] nameBytes = display.getBytes(CHARSET);
-			if(nameBytes.length > nameBuffer.limit()) {
-				throw new IllegalArgumentException("The passed display was longer than the max of " + nameBuffer.limit());
+			if(nameBytes.length > nameBuffer.capacity()) {
+				throw new IllegalArgumentException("The passed display was longer than the max of " + nameBuffer.capacity());
 			}
+			nameBuffer.clear();
 			// Null out the name buffer
-			for(int i = 0; i < nameBuffer.limit(); i++) {
+			for(int i = 0; i < nameBuffer.capacity(); i++) {
 				nameBuffer.put(i, NULL_BYTE);
 			}
 			nameBuffer.position(0);
 			nameBuffer.put(nameBytes);
 			nameBuffer.flip();
-			return display.equals(rtCounter.getValue());
+			boolean done = display.equals(rtCounter.getValue());
+			if(done) {
+				updateAgent(display.trim());
+			}
+			return done;
 		} catch (Exception ex) {
 			if(ex instanceof IllegalArgumentException) {
 				throw (IllegalArgumentException)ex;
@@ -95,10 +100,18 @@ public class JVMName {
 			return false;
 		}
 	}
-	
+
+	private static void updateAgent(String name) {
+		Properties p = JMXHelper.getAgentProperties();
+		if(p!=null) {
+			p.setProperty("sun.java.command", name);
+			p.setProperty("sun.rt.javaCommand", name);
+		}
+	}
+
 	public static int displayByteLimit() {
 		try {
-		return ((ByteBuffer)bufferField.get(rtCounter)).limit();
+			return ((ByteBuffer)bufferField.get(rtCounter)).capacity();
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed to get display byte limit", ex);
 		}

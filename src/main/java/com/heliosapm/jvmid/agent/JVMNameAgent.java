@@ -45,7 +45,9 @@ public class JVMNameAgent {
 					
 					if(JVMName.setDisplay(name.trim())) {
 						System.setProperty("sun.rt.javaCommand", JVMName.getDisplay());
-						System.setProperty("original.display.name", priorName);
+						if(!System.getProperties().containsKey("original.display.name")) {
+							System.setProperty("original.display.name", priorName);
+						}
 						System.out.println("Display Name set to [" + JVMName.getDisplay() + "]");												
 					} else {
 						System.out.println("Failed to set Display Name");
