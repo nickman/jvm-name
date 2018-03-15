@@ -42,6 +42,9 @@ ID: 28140, Display: /home/nwhitehead/eclipse/java-oxygen2/eclipse//plugins/org.e
 ```
 
 ## Using jvm-name in your code
+
+jvm-name should work with Java 6, 7 and 8. It will most likely not work with Java 9.
+
 I created jvm-name because sometimes it is useful to modify the DisplayName to a more intuitive or useful value. The procedure is a simple static call, and you can also access the current DisplayName.
 
 ```java
